@@ -1,264 +1,179 @@
 import os
 from flask import Flask, render_template, request, redirect, url_for, session
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
+from functools import wraps
 from models import db, Candidate, Confirmed, Attendance
 
+app = Flask(__name__)
+app.secret_key = "dummy_key_for_now"   # パスワード不要方式なので暫定的に固定キーを使う
 
-def create_app():
-    app = Flask(__name__, static_folder="static", template_folder="templates")
+# --------------------------------
+# DB 初期化
+# --------------------------------
+app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv("DATABASE_URL", "sqlite:///data.db")
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db.init_app(app)
 
-    # セッションキー（固定値でOK）
-    app.config["SECRET_KEY"] = "fixed-secret-key-abcde-12345"
+with app.app_context():
+    db.create_all()
 
-    # DB設定
-    DATABASE_URL = os.environ.get("DATABASE_URL")
-    if not DATABASE_URL:
-        raise RuntimeError("DATABASE_URL が設定されていません")
 
-    if DATABASE_URL.startswith("postgres://"):
-        DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+# --------------------------------
+# 管理者ページ（パスワード不要）
+# --------------------------------
+@app.route("/admin")
+def admin_menu():
+    return render_template("admin_menu.html")
 
-    app.config["SQLALCHEMY_DATABASE_URI"] = DATABASE_URL
-    app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-    db.init_app(app)
+# --------------------------------
+# 候補日入力
+# --------------------------------
+@app.route("/candidate", methods=["GET", "POST"])
+def candidate():
+    times = [f"{h}:00" for h in range(9, 22)]
+    gyms = ["A体育館", "B体育館", "C体育館"]
 
-    # ------------------------------
-    # トップページ
-    # ------------------------------
-    @app.route("/")
-    @app.route("/home")
-    def home():
-        return render_template("home.html")
+    if request.method == "POST":
+        year = int(request.form["year"])
+        month = int(request.form["month"])
+        day = int(request.form["day"])
+        gym = request.form["gym"]
+        start = request.form["start"]
+        end = request.form["end"]
 
-    # ------------------------------
-    # 管理者メニュー（認証なし）
-    # ------------------------------
-    @app.route("/admin")
-    def admin_menu():
-        return render_template("admin_menu.html")
+        cand = Candidate(year=year, month=month, day=day, gym=gym, start=start, end=end)
+        db.session.add(cand)
+        db.session.commit()
 
-    # ------------------------------
-    # 候補日入力ページ（認証なし）
-    # ------------------------------
-    @app.route("/candidate", methods=["GET", "POST"])
-    def candidate():
-        gyms = ["中平井", "平井", "西小岩", "北小岩", "南小岩"]
+        return redirect(url_for("candidate"))
 
-        # 時刻一覧
-        times = []
-        for h in range(18, 23):
-            times.append(f"{h:02d}:00")
-            times.append(f"{h:02d}:30")
-        times = times[:-1]  # 22:30まで
+    candidates = Candidate.query.order_by(
+        Candidate.year, Candidate.month, Candidate.day, Candidate.start
+    ).all()
 
-        # 初期表示用の日付（3ヶ月後の月の1日）
-        today = datetime.today()
-        base = (today.replace(day=1) + timedelta(days=92)).replace(day=1)
+    return render_template("candidate.html", candidates=candidates, gyms=gyms, times=times)
 
-        years = [base.year, base.year + 1]
-        months = list(range(1, 13))
-        days = list(range(1, 32))
 
-        if request.method == "POST":
-            cand = Candidate(
-                year=int(request.form["year"]),
-                month=int(request.form["month"]),
-                day=int(request.form["day"]),
-                gym=request.form["gym"],
-                start=request.form["start"],
-                end=request.form["end"]
-            )
-            db.session.add(cand)
-            db.session.commit()
+# --------------------------------
+# 候補日編集
+# --------------------------------
+@app.route("/candidate_edit/<int:id>", methods=["GET", "POST"])
+def candidate_edit(id):
+    cand = Candidate.query.get_or_404(id)
+    times = [f"{h}:00" for h in range(9, 22)]
+    gyms = ["A体育館", "B体育館", "C体育館"]
 
-            return render_template(
-                "candidate.html",
-                years=years,
-                months=months,
-                days=days,
-                gyms=gyms,
-                times=times,
-                selected_year=cand.year,
-                selected_month=cand.month,
-                selected_day=cand.day,
-                selected_gym=cand.gym,
-                selected_start=cand.start,
-                selected_end=cand.end,
-            )
+    if request.method == "POST":
+        cand.year = int(request.form["year"])
+        cand.month = int(request.form["month"])
+        cand.day = int(request.form["day"])
+        cand.gym = request.form["gym"]
+        cand.start = request.form["start"]
+        cand.end = request.form["end"]
 
-        return render_template(
-            "candidate.html",
-            years=years,
-            months=months,
-            days=days,
-            gyms=gyms,
-            times=times,
-            selected_year=base.year,
-            selected_month=base.month,
-            selected_day=base.day,
-            selected_gym="中平井",
-            selected_start="18:00",
-            selected_end="19:00",
-        )
-
-    # ------------------------------
-    # 日程確定（認証なし）
-    # ------------------------------
-    @app.route("/confirm", methods=["GET", "POST"])
-    def confirm():
-        candidates = Candidate.query.order_by(
-            Candidate.year.asc(),
-            Candidate.month.asc(),
-            Candidate.day.asc(),
-            Candidate.start.asc()
-        ).all()
-
-        if request.method == "POST":
-            c_id = int(request.form["candidate_id"])
-            exists = Confirmed.query.filter_by(candidate_id=c_id).first()
-
-            if not exists:
-                db.session.add(Confirmed(candidate_id=c_id))
-                db.session.commit()
-
-            return redirect(url_for("confirm"))
-
-        confirmed = (
-            db.session.query(Confirmed, Candidate)
-            .join(Candidate, Confirmed.candidate_id == Candidate.id)
-            .order_by(
-                Candidate.year.asc(),
-                Candidate.month.asc(),
-                Candidate.day.asc(),
-                Candidate.start.asc()
-            )
-            .all()
-        )
-
-        return render_template("confirm.html", candidates=candidates, confirmed=confirmed)
-
-    # ------------------------------
-    # 参加登録（カード方式）
-    # ------------------------------
-    @app.route("/register", methods=["GET"])
-    def register():
-        candidates = Candidate.query.order_by(
-            Candidate.year.asc(),
-            Candidate.month.asc(),
-            Candidate.day.asc(),
-            Candidate.start.asc()
-        ).all()
-        return render_template("register_select.html", candidates=candidates)
-
-    # ------------------------------
-    # 参加登録フォーム
-    # ------------------------------
-    @app.route("/register/event/<int:candidate_id>", methods=["GET", "POST"])
-    def register_event(candidate_id):
-        candidate = Candidate.query.get_or_404(candidate_id)
-
-        event = Confirmed.query.filter_by(candidate_id=candidate_id).first()
-        if not event:
-            event = Confirmed(candidate_id=candidate_id)
-            db.session.add(event)
-            db.session.commit()
-
-        members = ["松村", "山火", "山根", "奥迫", "川崎"]
-
-        if request.method == "POST":
-            att = Attendance(
-                event_id=event.id,
-                name=request.form["name"],
-                status=request.form["status"]
-            )
-            db.session.add(att)
-            db.session.commit()
-
-            return redirect(url_for("register_event", candidate_id=candidate_id))
-
-        attendance = Attendance.query.filter_by(event_id=event.id).all()
-
-        return render_template(
-            "register_form.html",
-            candidate=candidate,
-            attendance=attendance,
-            members=members
-        )
-
-    # ------------------------------
-    # 候補日編集
-    # ------------------------------
-    @app.route("/candidate/<int:id>/edit", methods=["GET", "POST"])
-    def edit_candidate(id):
-        cand = Candidate.query.get_or_404(id)
-
-        gyms = ["中平井", "平井", "西小岩", "北小岩", "南小岩"]
-        times = []
-        for h in range(18, 23):
-            times.append(f"{h:02d}:00")
-            times.append(f"{h:02d}:30")
-        times = times[:-1]
-
-        if request.method == "POST":
-            cand.year = int(request.form["year"])
-            cand.month = int(request.form["month"])
-            cand.day = int(request.form["day"])
-            cand.gym = request.form["gym"]
-            cand.start = request.form["start"]
-            cand.end = request.form["end"]
-
-            db.session.commit()
-            return redirect(url_for("confirm"))
-
-        return render_template("edit_candidate.html", cand=cand, gyms=gyms, times=times)
-
-    # ------------------------------
-    # 候補日削除
-    # ------------------------------
-    @app.route("/candidate/<int:id>/delete", methods=["POST"])
-    def delete_candidate(id):
-        cand = Candidate.query.get_or_404(id)
-        Confirmed.query.filter_by(candidate_id=id).delete()
-        db.session.delete(cand)
         db.session.commit()
         return redirect(url_for("confirm"))
 
-    # ------------------------------
-    # 出欠編集
-    # ------------------------------
-    @app.route("/attendance/<int:id>/edit", methods=["GET", "POST"])
-    def edit_attendance(id):
-        att = Attendance.query.get_or_404(id)
-        members = ["松村", "山火", "山根", "奥迫", "川崎"]
+    return render_template("candidate_edit.html", cand=cand, gyms=gyms, times=times)
 
-        if request.method == "POST":
-            att.name = request.form["name"]
-            att.status = request.form["status"]
-            db.session.commit()
 
-            return redirect(url_for("register_event", candidate_id=att.event.candidate_id))
+# --------------------------------
+# 候補日削除
+# --------------------------------
+@app.route("/candidate_delete/<int:id>")
+def candidate_delete(id):
+    cand = Candidate.query.get_or_404(id)
+    db.session.delete(cand)
+    db.session.commit()
+    return redirect(url_for("confirm"))
 
-        return render_template("edit_attendance.html", att=att, members=members)
 
-    # ------------------------------
-    # 出欠削除
-    # ------------------------------
-    @app.route("/attendance/<int:id>/delete", methods=["POST"])
-    def delete_attendance(id):
-        att = Attendance.query.get_or_404(id)
-        candidate_id = att.event.candidate_id
+# --------------------------------
+# 日程確定
+# --------------------------------
+@app.route("/confirm", methods=["GET", "POST"])
+def confirm():
+    candidates = Candidate.query.order_by(
+        Candidate.year, Candidate.month, Candidate.day, Candidate.start
+    ).all()
 
-        db.session.delete(att)
+    confirmed = Confirmed.query.first()
+
+    if request.method == "POST":
+        selected = int(request.form["selected"])
+        confirmed = Confirmed.query.first()
+
+        if confirmed:
+            confirmed.candidate_id = selected
+        else:
+            confirmed = Confirmed(candidate_id=selected)
+            db.session.add(confirmed)
+
         db.session.commit()
+        return redirect(url_for("confirm"))
 
-        return redirect(url_for("register_event", candidate_id=candidate_id))
-
-    # DB作成
-    with app.app_context():
-        db.create_all()
-
-    return app
+    return render_template("confirm.html", candidates=candidates, confirmed=confirmed)
 
 
-app = create_app()
+# --------------------------------
+# 参加登録
+# --------------------------------
+@app.route("/register", methods=["GET", "POST"])
+def register():
+    users = ["松村", "山火", "山根", "奥迫", "川崎"]
+
+    confirmed = Confirmed.query.first()
+    if not confirmed:
+        return render_template("register_wait.html")
+
+    event = Candidate.query.get(confirmed.candidate_id)
+
+    if request.method == "POST":
+        name = request.form["name"]
+        status = request.form["status"]
+
+        existing = Attendance.query.filter_by(name=name).first()
+
+        if existing:
+            existing.status = status
+        else:
+            db.session.add(Attendance(name=name, status=status, event_id=event.id))
+
+        db.session.commit()
+        return redirect(url_for("register"))
+
+    attendance = Attendance.query.all()
+
+    return render_template("register.html", users=users, event=event, attendance=attendance)
+
+
+# --------------------------------
+# 新規追加：参加一覧ページ（方法B）
+# --------------------------------
+@app.route("/attendance_list")
+def attendance_list():
+
+    """
+    Attendance  ---event_id--->  Confirmed  ---candidate_id--->  Candidate
+    """
+
+    records = (
+        db.session.query(Attendance, Candidate)
+        .join(Candidate, Attendance.event_id == Candidate.id)
+        .all()
+    )
+
+    return render_template("attendance_list.html", records=records)
+
+
+# --------------------------------
+# ホーム
+# --------------------------------
+@app.route("/")
+def home():
+    return render_template("home.html")
+
+
+if __name__ == "__main__":
+    app.run(debug=True)
