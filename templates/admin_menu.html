@@ -1,22 +1,10 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>管理者メニュー</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="/static/style.css">
-</head>
-<body>
+{% extends "base.html" %}
+{% block content %}
+<h2>管理者メニュー</h2>
 
-<div class="nav">
-    <a href="{{ url_for('home') }}">🏠 ホーム</a>
-</div>
+<a href="{{ url_for('candidate') }}">候補日追加</a><br>
+<a href="{{ url_for('confirm') }}">確定状況</a><br>
+<a href="{{ url_for('register') }}">参加状況確認</a><br>
+<a href="{{ url_for('admin_logout') }}">ログアウト</a>
 
-<h1>管理者メニュー</h1>
-
-<a class="btn" href="{{ url_for('candidate') }}">候補日追加</a>
-<a class="btn" href="{{ url_for('confirm') }}">候補日確認・確定</a>
-<a class="btn" href="{{ url_for('register') }}">参加状況確認</a>
-<a class="btn-gray" href="{{ url_for('admin_logout') }}">ログアウト</a>
-
-</body>
-</html>
+{% endblock %}
