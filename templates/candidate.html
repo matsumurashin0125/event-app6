@@ -1,52 +1,24 @@
-{% extends "base.html" %}
-{% block content %}
-<h2>候補日追加</h2>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>候補日追加</title>
+</head>
+<body>
 
-<form method="POST">
+<h1>候補日追加</h1>
 
-  年：
-  <select name="year">
-    {% for y in years %}
-      <option value="{{ y }}" {% if y == selected_year %}selected{% endif %}>{{ y }}</option>
-    {% endfor %}
-  </select>
-
-  月：
-  <select name="month">
-    {% for m in months %}
-      <option value="{{ m }}" {% if m == selected_month %}selected{% endif %}>{{ m }}</option>
-    {% endfor %}
-  </select>
-
-  日：
-  <select name="day">
-    {% for d in days %}
-      <option value="{{ d }}" {% if d == selected_day %}selected{% endif %}>{{ d }}</option>
-    {% endfor %}
-  </select>
-
-  体育館：
-  <select name="gym">
-    {% for g in gyms %}
-      <option value="{{ g }}" {% if g == selected_gym %}selected{% endif %}>{{ g }}</option>
-    {% endfor %}
-  </select>
-
-  開始：
-  <select name="start">
-    {% for t in times %}
-      <option value="{{ t }}" {% if t == selected_start %}selected{% endif %}>{{ t }}</option>
-    {% endfor %}
-  </select>
-
-  終了：
-  <select name="end">
-    {% for t in times %}
-      <option value="{{ t }}" {% if t == selected_end %}selected{% endif %}>{{ t }}</option>
-    {% endfor %}
-  </select>
-
-  <button type="submit">追加</button>
+<form method="post">
+    年: <input type="number" name="year" required><br>
+    月: <input type="number" name="month" required><br>
+    日: <input type="number" name="day" required><br>
+    場所: <input type="text" name="gym"><br>
+    開始: <input type="time" name="start"><br>
+    終了: <input type="time" name="end"><br>
+    <button type="submit">追加</button>
 </form>
 
-{% endblock %}
+<p><a href="{{ url_for('admin_menu') }}">管理者メニューへ戻る</a></p>
+<p><a href="{{ url_for('home') }}">トップへ戻る</a></p>
+
+</body>
+</html>
