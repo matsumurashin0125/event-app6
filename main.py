@@ -1,11 +1,12 @@
 import os
+import calendar
 from flask import Flask, render_template, request, redirect, url_for, session
 from datetime import datetime, timedelta, date
 from functools import wraps
 from models import db, Candidate, Confirmed, Attendance
 
 app = Flask(__name__)
-app.secret_key = "dummy_key_for_now"   # パスワード不要方式なので暫定的に固定キーを使う
+app.secret_key = "dummy_key_for_now"
 
 # --------------------------------
 # DB 初期化
@@ -19,7 +20,7 @@ with app.app_context():
 
 
 # --------------------------------
-# 管理者ページ（パスワード不要）
+# 管理者メニュー（パスワードなし）
 # --------------------------------
 @app.route("/admin")
 def admin_menu():
@@ -31,9 +32,43 @@ def admin_menu():
 # --------------------------------
 @app.route("/candidate", methods=["GET", "POST"])
 def candidate():
-    times = [f"{h}:00" for h in range(9, 22)]
-    gyms = ["A体育館", "B体育館", "C体育館"]
 
+    # ----- デフォルト日付（現在から3ヶ月後の1日） -----
+    today = date.today()
+    month_offset = today.month + 3
+    default_year = today.year + (month_offset - 1) // 12
+    default_month = (month_offset - 1) % 12 + 1
+    default_day = 1
+
+    # 年・月・日リスト
+    years = [default_year - 1, default_year, default_year + 1]
+    months = list(range(1, 12 + 1))
+
+    # 日 + 曜日
+    month_range = calendar.monthrange(default_year, default_month)[1]
+    days = []
+    for d in range(1, month_range + 1):
+        w = ["月", "火", "水", "木", "金", "土", "日"][date(default_year, default_month, d).weekday()]
+        days.append({"day": d, "label": f"{d} ({w})"})
+
+    # 体育館
+    gyms = ["中平井", "平井", "西小岩", "北小岩", "南小岩"]
+
+    # 30分刻み時間
+    times = []
+    for h in range(9, 23):
+        times.append(f"{h:02}:00")
+        times.append(f"{h:02}:30")
+
+    # デフォルト選択
+    selected_year = default_year
+    selected_month = default_month
+    selected_day = default_day
+    selected_gym = "中平井"
+    selected_start = "18:00"
+    selected_end = "19:00"
+
+    # POST 処理
     if request.method == "POST":
         year = int(request.form["year"])
         month = int(request.form["month"])
@@ -48,11 +83,20 @@ def candidate():
 
         return redirect(url_for("candidate"))
 
-    candidates = Candidate.query.order_by(
-        Candidate.year, Candidate.month, Candidate.day, Candidate.start
-    ).all()
-
-    return render_template("candidate.html", candidates=candidates, gyms=gyms, times=times)
+    return render_template(
+        "candidate.html",
+        years=years,
+        months=months,
+        days=days,
+        gyms=gyms,
+        times=times,
+        selected_year=selected_year,
+        selected_month=selected_month,
+        selected_day=selected_day,
+        selected_gym=selected_gym,
+        selected_start=selected_start,
+        selected_end=selected_end
+    )
 
 
 # --------------------------------
@@ -61,8 +105,15 @@ def candidate():
 @app.route("/candidate_edit/<int:id>", methods=["GET", "POST"])
 def candidate_edit(id):
     cand = Candidate.query.get_or_404(id)
-    times = [f"{h}:00" for h in range(9, 22)]
-    gyms = ["A体育館", "B体育館", "C体育館"]
+
+    # 体育館
+    gyms = ["中平井", "平井", "西小岩", "北小岩", "南小岩"]
+
+    # 30分刻み時間
+    times = []
+    for h in range(9, 23):
+        times.append(f"{h:02}:00")
+        times.append(f"{h:02}:30")
 
     if request.method == "POST":
         cand.year = int(request.form["year"])
@@ -121,6 +172,7 @@ def confirm():
 # --------------------------------
 @app.route("/register", methods=["GET", "POST"])
 def register():
+
     users = ["松村", "山火", "山根", "奥迫", "川崎"]
 
     confirmed = Confirmed.query.first()
@@ -149,14 +201,10 @@ def register():
 
 
 # --------------------------------
-# 新規追加：参加一覧ページ（方法B）
+# 参加一覧ページ
 # --------------------------------
 @app.route("/attendance_list")
 def attendance_list():
-
-    """
-    Attendance  ---event_id--->  Confirmed  ---candidate_id--->  Candidate
-    """
 
     records = (
         db.session.query(Attendance, Candidate)
