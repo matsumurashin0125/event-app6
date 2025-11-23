@@ -1,8 +1,21 @@
-# main.py
 import os
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, render_template, request, redirect, url_for, session
 from datetime import datetime, timedelta
+from functools import wraps
 from models import db, Candidate, Confirmed, Attendance
+
+
+# ------------------------------
+# 管理者ログイン保護
+# ------------------------------
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not session.get("admin_logged_in"):
+            return redirect(url_for("admin_login"))
+        return f(*args, **kwargs)
+    return decorated_function
+
 
 def create_app():
     app = Flask(__name__, static_folder="static", template_folder="templates")
@@ -22,11 +35,30 @@ def create_app():
 
     db.init_app(app)
 
-    # ==========================
-    #        ROUTES
-    # ==========================
+    # ============================================
+    #             ADMIN LOGIN
+    # ============================================
+    @app.route("/admin/login", methods=["GET", "POST"])
+    def admin_login():
+        if request.method == "POST":
+            password = request.form.get("password")
+            if password == os.environ.get("ADMIN_PASSWORD", "admin123"):
+                session["admin_logged_in"] = True
+                return redirect(url_for("index"))
+            return render_template("admin_login.html", error="パスワードが違います。")
 
+        return render_template("admin_login.html")
+
+    @app.route("/admin/logout")
+    def admin_logout():
+        session.pop("admin_logged_in", None)
+        return redirect(url_for("admin_login"))
+
+    # ============================================
+    #                  ROUTES
+    # ============================================
     @app.route("/", methods=["GET", "POST"])
+    @admin_required
     def index():
         if request.method == "POST":
             cand = Candidate(
@@ -46,11 +78,10 @@ def create_app():
         return render_template("index.html", base=base)
 
     @app.route("/confirm", methods=["GET", "POST"])
+    @admin_required
     def confirm():
         candidates = Candidate.query.order_by(
-            Candidate.year,
-            Candidate.month,
-            Candidate.day
+            Candidate.year, Candidate.month, Candidate.day
         ).all()
 
         if request.method == "POST":
@@ -93,17 +124,56 @@ def create_app():
             selected_event=event_id
         )
 
-    # ★ Render に必要：DB を自動作成（超重要）
+    # ====================================
+    #      イベント編集（管理者のみ）
+    # ====================================
+    @app.route("/event/<int:event_id>/edit", methods=["GET", "POST"])
+    @admin_required
+    def edit_event(event_id):
+        confirmed = Confirmed.query.get(event_id)
+        if not confirmed:
+            return "イベントが存在しません"
+
+        cand = Candidate.query.get(confirmed.candidate_id)
+
+        if request.method == "POST":
+            cand.year = int(request.form["year"])
+            cand.month = int(request.form["month"])
+            cand.day = int(request.form["day"])
+            cand.gym = request.form["gym"]
+            cand.start = request.form["start"]
+            cand.end = request.form["end"]
+
+            db.session.commit()
+            return redirect(url_for("register", event_id=event_id))
+
+        return render_template("edit_event.html", event=cand, event_id=event_id)
+
+    # ====================================
+    #      イベント削除（管理者のみ）
+    # ====================================
+    @app.route("/event/<int:event_id>/delete", methods=["POST"])
+    @admin_required
+    def delete_event(event_id):
+        confirmed = Confirmed.query.get(event_id)
+        if not confirmed:
+            return "イベントが存在しません"
+
+        Attendance.query.filter_by(event_id=event_id).delete()
+        db.session.delete(confirmed)
+        db.session.commit()
+
+        return redirect(url_for("register"))
+
+    # ★ Render に必要：DB 自動作成
     with app.app_context():
         db.create_all()
 
     return app
 
 
-# ====== Render 起動 ======
 app = create_app()
 
 if __name__ == "__main__":
-    app = create_app()
     port = int(os.environ.get("PORT", 5000))
     app.run(host="0.0.0.0", port=port)
