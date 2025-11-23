@@ -1,52 +1,25 @@
-{% extends "base.html" %}
-{% block content %}
-<h2>イベント編集</h2>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>イベント編集</title>
+</head>
+<body>
 
-<form method="POST">
+<h1>イベント編集</h1>
 
-  年：
-  <select name="year">
-    {% for y in years %}
-      <option value="{{ y }}" {% if y == cand.year %}selected{% endif %}>{{ y }}</option>
-    {% endfor %}
-  </select>
+<form method="post">
+    年: <input type="number" name="year" value="{{ event.year }}"><br>
+    月: <input type="number" name="month" value="{{ event.month }}"><br>
+    日: <input type="number" name="day" value="{{ event.day }}"><br>
+    場所: <input type="text" name="gym" value="{{ event.gym }}"><br>
+    開始: <input type="time" name="start" value="{{ event.start }}"><br>
+    終了: <input type="time" name="end" value="{{ event.end }}"><br>
 
-  月：
-  <select name="month">
-    {% for m in months %}
-      <option value="{{ m }}" {% if m == cand.month %}selected{% endif %}>{{ m }}</option>
-    {% endfor %}
-  </select>
-
-  日：
-  <select name="day">
-    {% for d in days %}
-      <option value="{{ d }}" {% if d == cand.day %}selected{% endif %}>{{ d }}</option>
-    {% endfor %}
-  </select>
-
-  体育館：
-  <select name="gym">
-    {% for g in gyms %}
-      <option value="{{ g }}" {% if g == cand.gym %}selected{% endif %}>{{ g }}</option>
-    {% endfor %}
-  </select>
-
-  開始：
-  <select name="start">
-    {% for t in times %}
-      <option value="{{ t }}" {% if t == cand.start %}selected{% endif %}>{{ t }}</option>
-    {% endfor %}
-  </select>
-
-  終了：
-  <select name="end">
-    {% for t in times %}
-      <option value="{{ t }}" {% if t == cand.end %}selected{% endif %}>{{ t }}</option>
-    {% endfor %}
-  </select>
-
-  <button type="submit">更新</button>
+    <button type="submit">保存</button>
 </form>
 
-{% endblock %}
+<p><a href="{{ url_for('confirm') }}">候補一覧へ戻る</a></p>
+<p><a href="{{ url_for('home') }}">トップへ戻る</a></p>
+
+</body>
+</html>
