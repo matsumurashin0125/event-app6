@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>参加登録</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<h1>参加する日程を選択してください</h1>
+
+<div class="card-container">
+
+    {% for c in candidates %}
+    <div class="card">
+        <h3>{{ c.year }}年{{ c.month }}月{{ c.day }}日</h3>
+        <p>{{ c.start }}〜{{ c.end }}</p>
+        <p>場所：{{ c.gym }}</p>
+
+        <a class="btn" href="{{ url_for('register_event', candidate_id=c.id) }}">
+            この日程で登録
+        </a>
+    </div>
+    {% endfor %}
+
+</div>
+
+</body>
+</html>
