@@ -1,0 +1,25 @@
+<h2>イベント編集</h2>
+
+<form method="post">
+    <label>年</label><br>
+    <input name="year" value="{{ event.year }}"><br>
+
+    <label>月</label><br>
+    <input name="month" value="{{ event.month }}"><br>
+
+    <label>日</label><br>
+    <input name="day" value="{{ event.day }}"><br>
+
+    <label>場所</label><br>
+    <input name="gym" value="{{ event.gym }}"><br>
+
+    <label>開始時間</label><br>
+    <input name="start" value="{{ event.start }}"><br>
+
+    <label>終了時間</label><br>
+    <input name="end" value="{{ event.end }}"><br>
+
+    <button type="submit">更新</button>
+</form>
+
+<a href="/register?event_id={{ event_id }}">戻る</a>
