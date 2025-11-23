@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="/static/style.css">
 </head>
+
 <body>
 
 <h1>候補日入力</h1>
@@ -13,6 +14,7 @@
 
     <form method="POST">
 
+        <!-- 年 -->
         <label>年</label>
         <select name="year">
             {% for y in years %}
@@ -20,6 +22,7 @@
             {% endfor %}
         </select>
 
+        <!-- 月 -->
         <label>月</label>
         <select name="month">
             {% for m in months %}
@@ -27,13 +30,17 @@
             {% endfor %}
         </select>
 
-        <label>日</label>
+        <!-- 日 + 曜日 -->
+        <label>日（曜日）</label>
         <select name="day">
             {% for d in days %}
-                <option value="{{ d }}" {% if d == selected_day %}selected{% endif %}>{{ d }}</option>
+                <option value="{{ d.day }}" {% if d.day == selected_day %}selected{% endif %}>
+                    {{ d.label }}
+                </option>
             {% endfor %}
         </select>
 
+        <!-- 体育館 -->
         <label>体育館</label>
         <select name="gym">
             {% for g in gyms %}
@@ -41,6 +48,7 @@
             {% endfor %}
         </select>
 
+        <!-- 開始時間 -->
         <label>開始時間</label>
         <select name="start">
             {% for t in times %}
@@ -48,6 +56,7 @@
             {% endfor %}
         </select>
 
+        <!-- 終了時間 -->
         <label>終了時間</label>
         <select name="end">
             {% for t in times %}
