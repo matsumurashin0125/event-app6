@@ -2,55 +2,59 @@
 <html>
 <head>
     <title>参加登録</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
 
+<div class="nav">
+    <a href="{{ url_for('home') }}">🏠</a>
+</div>
+
 <h1>参加登録</h1>
 
-<h2>確定イベント一覧</h2>
-<ul>
+<h2>確定イベント</h2>
 {% for con, event in events %}
-    <li>
-        <a href="{{ url_for('register', event_id=con.id) }}">
-            {{ event.year }}/{{ event.month }}/{{ event.day }} {{ event.gym }}
-        </a>
-    </li>
+<div class="card">
+    <a class="btn"
+       href="{{ url_for('register', event_id=con.id) }}">
+       {{ event.year }}/{{ event.month }}/{{ event.day }} {{ event.gym }}
+    </a>
+</div>
 {% endfor %}
-</ul>
 
 {% if selected_event %}
 <hr>
 <h2>出欠登録</h2>
+
 <form method="post">
     <input type="hidden" name="event_id" value="{{ selected_event }}">
 
-    名前：
+    <label>名前</label>
     <select name="name">
         {% for m in members %}
             <option value="{{ m }}">{{ m }}</option>
         {% endfor %}
-    </select><br>
+    </select>
 
-    ステータス：
+    <label>ステータス</label>
     <select name="status">
         <option value="参加">参加</option>
         <option value="欠席">欠席</option>
         <option value="未定">未定</option>
-    </select><br>
+    </select>
 
-    <button type="submit">登録</button>
+    <button type="submit">登録する</button>
 </form>
 
-<h3>登録済み一覧</h3>
-<ul>
-    {% for a in attendance %}
-        <li>{{ a.name }} : {{ a.status }}</li>
-    {% endfor %}
-</ul>
+<h2>登録済み一覧</h2>
+{% for a in attendance %}
+<div class="card">
+    {{ a.name }}：{{ a.status }}
+</div>
+{% endfor %}
 
 {% endif %}
-
-<p><a href="{{ url_for('home') }}">トップへ戻る</a></p>
 
 </body>
 </html>
