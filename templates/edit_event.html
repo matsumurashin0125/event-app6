@@ -2,24 +2,32 @@
 <html>
 <head>
     <title>イベント編集</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
+
+<div class="nav">
+    <a href="{{ url_for('home') }}">🏠</a>
+    <a href="{{ url_for('confirm') }}">🔙</a>
+</div>
 
 <h1>イベント編集</h1>
 
 <form method="post">
-    年: <input type="number" name="year" value="{{ event.year }}"><br>
-    月: <input type="number" name="month" value="{{ event.month }}"><br>
-    日: <input type="number" name="day" value="{{ event.day }}"><br>
-    場所: <input type="text" name="gym" value="{{ event.gym }}"><br>
-    開始: <input type="time" name="start" value="{{ event.start }}"><br>
-    終了: <input type="time" name="end" value="{{ event.end }}"><br>
+    <input type="number" name="year" value="{{ event.year }}" required>
+    <input type="number" name="month" value="{{ event.month }}" required>
+    <input type="number" name="day" value="{{ event.day }}" required>
 
-    <button type="submit">保存</button>
+    <input type="text" name="gym" value="{{ event.gym }}">
+
+    <label>開始</label>
+    <input type="time" name="start" value="{{ event.start }}">
+    <label>終了</label>
+    <input type="time" name="end" value="{{ event.end }}">
+
+    <button type="submit">更新する</button>
 </form>
-
-<p><a href="{{ url_for('confirm') }}">候補一覧へ戻る</a></p>
-<p><a href="{{ url_for('home') }}">トップへ戻る</a></p>
 
 </body>
 </html>
