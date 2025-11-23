@@ -167,38 +167,79 @@ def confirm():
     return render_template("confirm.html", candidates=candidates, confirmed=confirmed)
 
 
-# --------------------------------
-# 参加登録
-# --------------------------------
-@app.route("/register", methods=["GET", "POST"])
-def register():
+# ------------------------------
+# 参加登録フォーム（確定日用）
+# ------------------------------
+@app.route("/register/event/<int:candidate_id>", methods=["GET", "POST"])
+def register_event(candidate_id):
+    # 候補日を取得（存在しなければ404）
+    candidate = Candidate.query.get_or_404(candidate_id)
 
-    users = ["松村", "山火", "山根", "奥迫", "川崎"]
+    # Confirmed に存在しなければ自動作成
+    event = Confirmed.query.filter_by(candidate_id=candidate_id).first()
+    if not event:
+        event = Confirmed(candidate_id=candidate_id)
+        db.session.add(event)
+        db.session.commit()
 
-    confirmed = Confirmed.query.first()
-    if not confirmed:
-        return render_template("register_wait.html")
+    # プルダウンで表示する固定メンバー
+    members = ["松村", "山火", "山根", "奥迫", "川崎"]
 
-    event = Candidate.query.get(confirmed.candidate_id)
-
+    # POST → 出欠登録処理
     if request.method == "POST":
         name = request.form["name"]
         status = request.form["status"]
 
-        existing = Attendance.query.filter_by(name=name).first()
-
-        if existing:
-            existing.status = status
+        # 同じ名前の重複登録防止（任意）
+        exists = Attendance.query.filter_by(event_id=event.id, name=name).first()
+        if exists:
+            exists.status = status
         else:
-            db.session.add(Attendance(name=name, status=status, event_id=event.id))
+            new_att = Attendance(event_id=event.id, name=name, status=status)
+            db.session.add(new_att)
 
         db.session.commit()
-        return redirect(url_for("register"))
 
-    attendance = Attendance.query.all()
+        return redirect(url_for("register_event", candidate_id=candidate_id))
 
-    return render_template("register.html", users=users, event=event, attendance=attendance)
+    # 出欠一覧
+    attendance = Attendance.query.filter_by(event_id=event.id).all()
 
+    return render_template(
+        "register_form.html",
+        candidate=candidate,
+        attendance=attendance,
+        members=members
+    )
+# ------------------------------
+# 出欠編集
+# ------------------------------
+@app.route("/attendance/<int:id>/edit", methods=["GET", "POST"])
+def edit_attendance(id):
+    att = Attendance.query.get_or_404(id)
+    members = ["松村", "山火", "山根", "奥迫", "川崎"]
+
+    if request.method == "POST":
+        att.name = request.form["name"]
+        att.status = request.form["status"]
+        db.session.commit()
+
+        return redirect(url_for("register_event", candidate_id=att.event.candidate_id))
+
+    return render_template("edit_attendance.html", att=att, members=members)
+
+# ------------------------------
+# 出欠削除
+# ------------------------------
+@app.route("/attendance/<int:id>/delete", methods=["POST"])
+def delete_attendance(id):
+    att = Attendance.query.get_or_404(id)
+    candidate_id = att.event.candidate_id
+
+    db.session.delete(att)
+    db.session.commit()
+
+    return redirect(url_for("register_event", candidate_id=candidate_id))
 
 # --------------------------------
 # 参加一覧ページ
