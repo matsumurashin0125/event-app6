@@ -1,55 +1,44 @@
-<body>
+<h2>確定イベント一覧</h2>
 
-<nav>
-    <a href="{{ url_for('index') }}">候補日入力</a> |
-    <a href="{{ url_for('confirm') }}">日程確定</a> |
-    <a href="{{ url_for('register') }}">参加登録</a>
-</nav>
-<hr>
-
-<!DOCTYPE html>
-<html>
-<head>
-    <title>参加登録</title>
-    <link rel="stylesheet" href="/static/style.css">
-</head>
-<body>
-<h2>参加登録</h2>
-
-<form method="POST">
-    日程：
-    <select name="event_id">
-        {% for e in events %}
-        <option value="{{ e.id }}">
-            {{ e.year }}/{{ e.month }}/{{ e.day }} {{ e.gym }}
-        </option>
-        {% endfor %}
-    </select><br>
-
-    名前：
-    <select name="name">
-        <option>松村</option>
-        <option>まいこはん</option>
-        <option>まゆちゃん</option>
-        <option>B様</option>
-        <option>山根</option>
-    </select><br>
-
-    参加：
-    <select name="status">
-        <option>参加</option>
-        <option>不参加</option>
-    </select><br>
-
-    <button type="submit">確定</button>
-</form>
-
-<h3>参加状況</h3>
 <ul>
-{% for a in attendance %}
-    <li>{{ a.name }}：{{ a.status }}</li>
+{% for confirmed, ev in events %}
+    <li>
+        <a href="/register?event_id={{ confirmed.id }}">
+            {{ ev.year }}/{{ ev.month }}/{{ ev.day }} {{ ev.gym }}
+        </a>
+
+        {% if session.admin_logged_in %}
+            | <a href="/event/{{ confirmed.id }}/edit">編集</a>
+            <form action="/event/{{ confirmed.id }}/delete" method="post" style="display:inline;">
+                <button onclick="return confirm('削除しますか？')" type="submit">削除</button>
+            </form>
+        {% endif %}
+    </li>
 {% endfor %}
 </ul>
 
-</body>
-</html>
+<hr>
+
+{% if selected_event %}
+<h3>参加状況</h3>
+<table border="1">
+    <tr><th>名前</th><th>出欠</th></tr>
+    {% for a in attendance %}
+        <tr>
+            <td>{{ a.name }}</td>
+            <td>{{ a.status }}</td>
+        </tr>
+    {% endfor %}
+</table>
+{% endif %}
+
+<h3>参加登録</h3>
+<form method="post">
+    <input type="hidden" name="event_id" value="{{ selected_event }}">
+    <input name="name" placeholder="名前" required>
+    <select name="status">
+        <option>出席</option>
+        <option>欠席</option>
+    </select>
+    <button type="submit">送信</button>
+</form>
