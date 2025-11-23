@@ -54,7 +54,7 @@ def create_app():
         return redirect(url_for("home"))
 
     # ------------------------------
-    # トップページ（home）
+    # トップページ
     # ------------------------------
     @app.route("/")
     @app.route("/home")
@@ -146,7 +146,8 @@ def create_app():
         candidates = Candidate.query.order_by(
             Candidate.year.asc(),
             Candidate.month.asc(),
-            Candidate.day.asc()
+            Candidate.day.asc(),
+            Candidate.start.asc()
         ).all()
 
         if request.method == "POST":
@@ -162,7 +163,7 @@ def create_app():
         confirmed = (
             db.session.query(Confirmed, Candidate)
             .join(Candidate, Confirmed.candidate_id == Candidate.id)
-            .order_by(Candidate.year.asc(), Candidate.month.asc(), Candidate.day.asc())
+            .order_by(Candidate.year.asc(), Candidate.month.asc(), Candidate.day.asc(), Candidate.start.asc())
             .all()
         )
 
@@ -173,39 +174,52 @@ def create_app():
         )
 
     # ------------------------------
-    # 出欠登録
+    # 参加登録（カード選択方式）
     # ------------------------------
-    @app.route("/register", methods=["GET", "POST"])
+    @app.route("/register", methods=["GET"])
     def register():
-        confirmed_list = (
-            db.session.query(Confirmed, Candidate)
-            .join(Candidate, Confirmed.candidate_id == Candidate.id)
-            .order_by(Candidate.year.asc(), Candidate.month.asc(), Candidate.day.asc())
-            .all()
-        )
+        candidates = Candidate.query.order_by(
+            Candidate.year.asc(),
+            Candidate.month.asc(),
+            Candidate.day.asc(),
+            Candidate.start.asc()
+        ).all()
 
-        member_list = ["松村", "山火", "山根", "奥迫", "川崎"]
+        return render_template("register_select.html", candidates=candidates)
+
+    # ------------------------------
+    # 個別日程の参加登録フォーム
+    # ------------------------------
+    @app.route("/register/event/<int:candidate_id>", methods=["GET", "POST"])
+    def register_event(candidate_id):
+        candidate = Candidate.query.get_or_404(candidate_id)
+
+        event = Confirmed.query.filter_by(candidate_id=candidate_id).first()
+        if not event:
+            event = Confirmed(candidate_id=candidate_id)
+            db.session.add(event)
+            db.session.commit()
+
+        members = ["松村", "山火", "山根", "奥迫", "川崎"]
 
         if request.method == "POST":
-            event_id = int(request.form["event_id"])
             att = Attendance(
-                event_id=event_id,
+                event_id=event.id,
                 name=request.form["name"],
                 status=request.form["status"]
             )
             db.session.add(att)
             db.session.commit()
-            return redirect(url_for("register", event_id=event_id))
 
-        event_id = request.args.get("event_id")
-        attendance = Attendance.query.filter_by(event_id=event_id).all() if event_id else []
+            return redirect(url_for("register_event", candidate_id=candidate_id))
+
+        attendance = Attendance.query.filter_by(event_id=event.id).all()
 
         return render_template(
-            "register.html",
-            events=confirmed_list,
+            "register_form.html",
+            candidate=candidate,
             attendance=attendance,
-            selected_event=event_id,
-            members=member_list
+            members=members
         )
 
     # ------------------------------
@@ -269,7 +283,7 @@ def create_app():
             att.status = request.form["status"]
             db.session.commit()
 
-            return redirect(url_for("register", event_id=att.event_id))
+            return redirect(url_for("register_event", candidate_id=att.event.candidate_id))
 
         return render_template(
             "edit_attendance.html",
@@ -284,12 +298,12 @@ def create_app():
     @admin_required
     def delete_attendance(id):
         att = Attendance.query.get_or_404(id)
-        event_id = att.event_id
+        candidate_id = att.event.candidate_id
 
         db.session.delete(att)
         db.session.commit()
 
-        return redirect(url_for("register", event_id=event_id))
+        return redirect(url_for("register_event", candidate_id=candidate_id))
 
     # DBテーブル作成
     with app.app_context():
