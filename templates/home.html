@@ -1,5 +1,15 @@
-{% extends "base.html" %}
-{% block content %}
-<h2>トップページ</h2>
-<a href="{{ url_for('register') }}">参加登録ページへ</a>
-{% endblock %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>メニュー</title>
+</head>
+<body>
+<h1>ページ選択</h1>
+
+<ul>
+    <li><a href="{{ url_for('register') }}">参加登録</a></li>
+    <li><a href="{{ url_for('admin_login') }}">管理者ログイン</a></li>
+</ul>
+
+</body>
+</html>
