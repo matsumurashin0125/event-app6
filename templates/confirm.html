@@ -1,45 +1,37 @@
-{% extends "base.html" %}
-{% block content %}
-<h2>候補日 → 確定</h2>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>候補日確認</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
 
-<h3>候補一覧</h3>
-<ul>
-  {% for c in candidates %}
-  <li>
-    {{ c.year }}/{{ c.month }}/{{ c.day }} {{ c.gym }} {{ c.start }}-{{ c.end }}
+<div class="nav">
+    <a href="{{ url_for('home') }}">🏠</a>
+    <a href="{{ url_for('admin_menu') }}">🔧</a>
+</div>
 
-    <!-- 確定 -->
-    <form method="POST" style="display:inline;">
-      <input type="hidden" name="candidate_id" value="{{ c.id }}">
-      <button type="submit">確定</button>
+<h1>候補日確認</h1>
+
+<h2>未確定候補日</h2>
+{% for c in candidates %}
+<div class="card">
+    {{ c.year }}/{{ c.month }}/{{ c.day }} {{ c.gym }}
+    <form method="post">
+        <input type="hidden" name="candidate_id" value="{{ c.id }}">
+        <button type="submit">この日に確定</button>
     </form>
+</div>
+{% endfor %}
 
-    <!-- 編集 -->
-    <a href="{{ url_for('edit_event', candidate_id=c.id) }}">編集</a>
+<h2>確定済み日程</h2>
+{% for con, cand in confirmed %}
+<div class="card">
+    ✔ 確定：{{ cand.year }}/{{ cand.month }}/{{ cand.day }} {{ cand.gym }}
+    <a class="btn-gray" href="{{ url_for('edit_event', event_id=con.id) }}">編集</a>
+</div>
+{% endfor %}
 
-    <!-- 削除 -->
-    <form method="POST" action="{{ url_for('delete_event', candidate_id=c.id) }}" style="display:inline;">
-      <button type="submit" onclick="return confirm('削除しますか？')">削除</button>
-    </form>
-  </li>
-  {% endfor %}
-</ul>
-
-<h3>確定済み</h3>
-<ul>
-  {% for con, c in confirmed %}
-  <li>
-    <b>[確定]</b> {{ c.year }}/{{ c.month }}/{{ c.day }} {{ c.gym }} {{ c.start }}-{{ c.end }}
-
-    <!-- 編集 -->
-    <a href="{{ url_for('edit_event', candidate_id=c.id) }}">編集</a>
-
-    <!-- 削除 -->
-    <form method="POST" action="{{ url_for('delete_event', candidate_id=c.id) }}" style="display:inline;">
-      <button type="submit" onclick="return confirm('削除しますか？')">削除</button>
-    </form>
-  </li>
-  {% endfor %}
-</ul>
-
-{% endblock %}
+</body>
+</html>
