@@ -1,19 +1,76 @@
+/* ------------------------------
+   スマホ最適化共通スタイル
+------------------------------ */
 body {
-    font-family: sans-serif;
-    margin: 20px;
-}
-
-select, button {
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
+    margin: 16px;
+    padding-bottom: 50px;
     font-size: 18px;
-    padding: 6px;
-    margin: 5px 0;
 }
 
-button {
-    padding: 8px 15px;
+/* リンクとボタンを押しやすく */
+button, input[type="submit"], a.btn {
+    width: 100%;
+    padding: 14px;
+    margin: 10px 0;
+    font-size: 18px;
+    border-radius: 10px;
+    border: none;
+    background: #007aff;
+    color: white;
+    text-align: center;
+    display: block;
 }
 
-ul {
-    list-style: none;
-    padding: 0;
+a.btn-gray {
+    background: #d1d1d6;
+    color: #000;
+}
+
+a {
+    text-decoration: none;
+}
+
+/* 入力欄 */
+input, select {
+    width: 100%;
+    padding: 12px;
+    margin: 10px 0;
+    font-size: 18px;
+    border-radius: 8px;
+    border: 1px solid #ccc;
+}
+
+/* ------------------------------
+   カード（リストを見やすく）
+------------------------------ */
+.card {
+    padding: 16px;
+    margin: 12px 0;
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid #e5e5ea;
+    box-shadow: 0 2px 6px #00000010;
+}
+
+/* ------------------------------
+   上部ナビ（固定）
+------------------------------ */
+.nav {
+    position: sticky;
+    top: 0;
+    background: #ffffffee;
+    padding: 10px;
+    display: flex;
+    gap: 10px;
+    border-bottom: 1px solid #ddd;
+    backdrop-filter: blur(10px);
+    z-index: 1000;
+}
+
+.nav a {
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 16px;
+    background: #f2f2f7;
 }
