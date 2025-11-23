@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>日程確定</title></head>
+<body>
+<h2>日程確定</h2>
+
+<form method="POST">
+    <select name="candidate_id">
+        {% for c in candidates %}
+        <option value="{{ c.id }}">
+            {{ c.year }}/{{ c.month }}/{{ c.day }} {{ c.gym }}
+        </option>
+        {% endfor %}
+    </select>
+    <button>確定</button>
+</form>
+
+</body>
+</html>

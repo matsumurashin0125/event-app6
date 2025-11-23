@@ -1,0 +1,19 @@
+body {
+    font-family: sans-serif;
+    margin: 20px;
+}
+
+select, button {
+    font-size: 18px;
+    padding: 6px;
+    margin: 5px 0;
+}
+
+button {
+    padding: 8px 15px;
+}
+
+ul {
+    list-style: none;
+    padding: 0;
+}
