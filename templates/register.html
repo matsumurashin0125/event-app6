@@ -1,44 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>参加登録</title>
+</head>
+<body>
+
+<h1>参加登録</h1>
+
 <h2>確定イベント一覧</h2>
-
 <ul>
-{% for confirmed, ev in events %}
+{% for con, event in events %}
     <li>
-        <a href="/register?event_id={{ confirmed.id }}">
-            {{ ev.year }}/{{ ev.month }}/{{ ev.day }} {{ ev.gym }}
+        <a href="{{ url_for('register', event_id=con.id) }}">
+            {{ event.year }}/{{ event.month }}/{{ event.day }} {{ event.gym }}
         </a>
-
-        {% if session.admin_logged_in %}
-            | <a href="/event/{{ confirmed.id }}/edit">編集</a>
-            <form action="/event/{{ confirmed.id }}/delete" method="post" style="display:inline;">
-                <button onclick="return confirm('削除しますか？')" type="submit">削除</button>
-            </form>
-        {% endif %}
     </li>
 {% endfor %}
 </ul>
 
-<hr>
-
 {% if selected_event %}
-<h3>参加状況</h3>
-<table border="1">
-    <tr><th>名前</th><th>出欠</th></tr>
-    {% for a in attendance %}
-        <tr>
-            <td>{{ a.name }}</td>
-            <td>{{ a.status }}</td>
-        </tr>
-    {% endfor %}
-</table>
-{% endif %}
-
-<h3>参加登録</h3>
+<hr>
+<h2>出欠登録</h2>
 <form method="post">
     <input type="hidden" name="event_id" value="{{ selected_event }}">
-    <input name="name" placeholder="名前" required>
+
+    名前：
+    <select name="name">
+        {% for m in members %}
+            <option value="{{ m }}">{{ m }}</option>
+        {% endfor %}
+    </select><br>
+
+    ステータス：
     <select name="status">
-        <option>出席</option>
-        <option>欠席</option>
-    </select>
-    <button type="submit">送信</button>
+        <option value="参加">参加</option>
+        <option value="欠席">欠席</option>
+        <option value="未定">未定</option>
+    </select><br>
+
+    <button type="submit">登録</button>
 </form>
+
+<h3>登録済み一覧</h3>
+<ul>
+    {% for a in attendance %}
+        <li>{{ a.name }} : {{ a.status }}</li>
+    {% endfor %}
+</ul>
+
+{% endif %}
+
+<p><a href="{{ url_for('home') }}">トップへ戻る</a></p>
+
+</body>
+</html>
