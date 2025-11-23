@@ -1,45 +1,55 @@
-<!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"><title>参加登録</title></head>
 <body>
 
+<nav>
+    <a href="{{ url_for('index') }}">候補日入力</a> |
+    <a href="{{ url_for('confirm') }}">日程確定</a> |
+    <a href="{{ url_for('register') }}">参加登録</a>
+</nav>
+<hr>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>参加登録</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
 <h2>参加登録</h2>
 
-<form method="GET" action="{{ url_for('register') }}">
-    <select name="event_id" onchange="this.form.submit()">
-        <option value="">-- イベントを選択 --</option>
-        {% for conf, cand in events %}
-        <option value="{{ conf.id }}"
-            {% if selected_event and selected_event|int == conf.id %}selected{% endif %}>
-            {{ cand.year }}/{{ cand.month }}/{{ cand.day }} {{ cand.gym }}
+<form method="POST">
+    日程：
+    <select name="event_id">
+        {% for e in events %}
+        <option value="{{ e.id }}">
+            {{ e.year }}/{{ e.month }}/{{ e.day }} {{ e.gym }}
         </option>
         {% endfor %}
-    </select>
-</form>
+    </select><br>
 
-{% if selected_event %}
-<h3>参加者一覧</h3>
+    名前：
+    <select name="name">
+        <option>松村</option>
+        <option>まいこはん</option>
+        <option>まゆちゃん</option>
+        <option>B様</option>
+        <option>山根</option>
+    </select><br>
 
-<ul>
-    {% for a in attendance %}
-    <li>{{ a.name }} - {{ a.status }}</li>
-    {% endfor %}
-</ul>
-
-<h3>参加登録</h3>
-
-<form method="POST">
-    <input type="hidden" name="event_id" value="{{ selected_event }}">
-    名前：<input type="text" name="name" required>
-    状態：
+    参加：
     <select name="status">
         <option>参加</option>
-        <option>欠席</option>
-        <option>未定</option>
-    </select>
-    <button>登録</button>
+        <option>不参加</option>
+    </select><br>
+
+    <button type="submit">確定</button>
 </form>
-{% endif %}
+
+<h3>参加状況</h3>
+<ul>
+{% for a in attendance %}
+    <li>{{ a.name }}：{{ a.status }}</li>
+{% endfor %}
+</ul>
 
 </body>
 </html>
