@@ -2,36 +2,36 @@
 <html>
 <head>
     <title>候補日確認</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
 
-<h1>候補日一覧</h1>
+<div class="nav">
+    <a href="{{ url_for('home') }}">🏠</a>
+    <a href="{{ url_for('admin_menu') }}">🔧</a>
+</div>
 
-<h2>未確定</h2>
-<ul>
+<h1>候補日確認</h1>
+
+<h2>未確定候補日</h2>
 {% for c in candidates %}
-    <li>
-        {{ c.year }} / {{ c.month }} / {{ c.day }}  {{ c.gym }}
-        <form method="post" style="display:inline;">
-            <input type="hidden" name="candidate_id" value="{{ c.id }}">
-            <button type="submit">この日で確定</button>
-        </form>
-    </li>
+<div class="card">
+    {{ c.year }}/{{ c.month }}/{{ c.day }} {{ c.gym }}
+    <form method="post">
+        <input type="hidden" name="candidate_id" value="{{ c.id }}">
+        <button type="submit">この日に確定</button>
+    </form>
+</div>
 {% endfor %}
-</ul>
 
-<h2>確定済み</h2>
-<ul>
+<h2>確定済み日程</h2>
 {% for con, cand in confirmed %}
-    <li>
-        【確定】 {{ cand.year }} / {{ cand.month }} / {{ cand.day }} {{ cand.gym }}
-        <a href="{{ url_for('edit_event', event_id=con.id) }}">編集</a>
-    </li>
+<div class="card">
+    ✔ 確定：{{ cand.year }}/{{ cand.month }}/{{ cand.day }} {{ cand.gym }}
+    <a class="btn-gray" href="{{ url_for('edit_event', event_id=con.id) }}">編集</a>
+</div>
 {% endfor %}
-</ul>
-
-<p><a href="{{ url_for('admin_menu') }}">管理者メニューへ戻る</a></p>
-<p><a href="{{ url_for('home') }}">トップへ戻る</a></p>
 
 </body>
 </html>
