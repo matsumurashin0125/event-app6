@@ -35,7 +35,7 @@ def create_app():
     db.init_app(app)
 
     # ------------------------------
-    # ログイン画面
+    # 管理者ログイン
     # ------------------------------
     @app.route("/admin/login", methods=["GET", "POST"])
     def admin_login():
@@ -43,7 +43,7 @@ def create_app():
             password = request.form.get("password")
             if password == os.environ.get("ADMIN_PASSWORD", "admin123"):
                 session["admin_logged_in"] = True
-                return redirect(url_for("home"))
+                return redirect(url_for("admin_menu"))
             return render_template("admin_login.html", error="パスワードが違います。")
 
         return render_template("admin_login.html")
@@ -62,11 +62,19 @@ def create_app():
         return render_template("home.html")
 
     # ------------------------------
-    # 候補日追加（管理者のみ）
+    # 管理者メニュー（ログイン後）
+    # ------------------------------
+    @app.route("/admin")
+    @admin_required
+    def admin_menu():
+        return render_template("admin_menu.html")
+
+    # ------------------------------
+    # 候補日追加
     # ------------------------------
     @app.route("/candidate", methods=["GET", "POST"])
     @admin_required
-    def index():
+    def candidate():
         if request.method == "POST":
             cand = Candidate(
                 year=int(request.form["year"]),
@@ -82,10 +90,10 @@ def create_app():
 
         today = datetime.today()
         base = (today.replace(day=1) + timedelta(days=92)).replace(day=1)
-        return render_template("index.html", base=base)
+        return render_template("candidate.html", base=base)
 
     # ------------------------------
-    # 候補日確認（管理者のみ）
+    # 候補日確認 ＆ 確定
     # ------------------------------
     @app.route("/confirm", methods=["GET", "POST"])
     @admin_required
@@ -96,14 +104,30 @@ def create_app():
 
         if request.method == "POST":
             c_id = int(request.form["candidate_id"])
-            db.session.add(Confirmed(candidate_id=c_id))
-            db.session.commit()
-            return redirect(url_for("register"))
 
-        return render_template("confirm.html", candidates=candidates)
+            # ▼ 重複登録を防ぐ
+            exists = Confirmed.query.filter_by(candidate_id=c_id).first()
+            if not exists:
+                db.session.add(Confirmed(candidate_id=c_id))
+                db.session.commit()
+
+            return redirect(url_for("confirm"))
+
+        confirmed = (
+            db.session.query(Confirmed, Candidate)
+            .join(Candidate, Confirmed.candidate_id == Candidate.id)
+            .order_by(Candidate.year, Candidate.month, Candidate.day)
+            .all()
+        )
+
+        return render_template(
+            "confirm.html",
+            candidates=candidates,
+            confirmed=confirmed
+        )
 
     # ------------------------------
-    # 出欠登録（誰でもOK）
+    # 出欠登録（誰でも）
     # ------------------------------
     @app.route("/register", methods=["GET", "POST"])
     def register():
@@ -113,6 +137,8 @@ def create_app():
             .order_by(Candidate.year, Candidate.month, Candidate.day)
             .all()
         )
+
+        member_list = ["松村", "山火", "山根", "奥迫", "川崎"]
 
         if request.method == "POST":
             event_id = int(request.form["event_id"])
@@ -134,11 +160,12 @@ def create_app():
             "register.html",
             events=confirmed_list,
             attendance=attendance,
-            selected_event=event_id
+            selected_event=event_id,
+            members=member_list
         )
 
     # ------------------------------
-    # イベント編集（管理者のみ）
+    # イベント編集（管理者）
     # ------------------------------
     @app.route("/event/<int:event_id>/edit", methods=["GET", "POST"])
     @admin_required
@@ -160,10 +187,14 @@ def create_app():
             db.session.commit()
             return redirect(url_for("register", event_id=event_id))
 
-        return render_template("edit_event.html", event=cand, event_id=event_id)
+        return render_template(
+            "edit_event.html",
+            event=cand,
+            event_id=event_id
+        )
 
     # ------------------------------
-    # イベント削除（管理者のみ）
+    # イベント削除（管理者）
     # ------------------------------
     @app.route("/event/<int:event_id>/delete", methods=["POST"])
     @admin_required
@@ -175,7 +206,6 @@ def create_app():
         Attendance.query.filter_by(event_id=event_id).delete()
         db.session.delete(confirmed)
         db.session.commit()
-
         return redirect(url_for("register"))
 
     # DB 初期化
