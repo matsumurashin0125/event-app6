@@ -1,25 +1,25 @@
-<h2>イベント編集</h2>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>イベント編集</title>
+</head>
+<body>
+
+<h1>イベント編集</h1>
 
 <form method="post">
-    <label>年</label><br>
-    <input name="year" value="{{ event.year }}"><br>
+    年: <input type="number" name="year" value="{{ event.year }}"><br>
+    月: <input type="number" name="month" value="{{ event.month }}"><br>
+    日: <input type="number" name="day" value="{{ event.day }}"><br>
+    場所: <input type="text" name="gym" value="{{ event.gym }}"><br>
+    開始: <input type="time" name="start" value="{{ event.start }}"><br>
+    終了: <input type="time" name="end" value="{{ event.end }}"><br>
 
-    <label>月</label><br>
-    <input name="month" value="{{ event.month }}"><br>
-
-    <label>日</label><br>
-    <input name="day" value="{{ event.day }}"><br>
-
-    <label>場所</label><br>
-    <input name="gym" value="{{ event.gym }}"><br>
-
-    <label>開始時間</label><br>
-    <input name="start" value="{{ event.start }}"><br>
-
-    <label>終了時間</label><br>
-    <input name="end" value="{{ event.end }}"><br>
-
-    <button type="submit">更新</button>
+    <button type="submit">保存</button>
 </form>
 
-<a href="/register?event_id={{ event_id }}">戻る</a>
+<p><a href="{{ url_for('confirm') }}">候補一覧へ戻る</a></p>
+<p><a href="{{ url_for('home') }}">トップへ戻る</a></p>
+
+</body>
+</html>
