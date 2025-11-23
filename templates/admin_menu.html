@@ -9,9 +9,25 @@
 
 <h1>管理者メニュー</h1>
 
-<a class="btn" href="{{ url_for('candidate') }}">候補日入力</a>
-<a class="btn" href="{{ url_for('confirm') }}">日程確定</a>
-<a class="btn" href="{{ url_for('admin_logout') }}">ログアウト</a>
+<div class="tile-container">
+
+    <a class="tile" href="{{ url_for('candidate') }}">
+        📅 候補日入力
+    </a>
+
+    <a class="tile" href="{{ url_for('confirm') }}">
+        ✅ 日程確定
+    </a>
+
+    <a class="tile" href="{{ url_for('home') }}">
+        🏠 ホームへ戻る
+    </a>
+
+    <a class="tile" href="{{ url_for('admin_logout') }}">
+        🚪 ログアウト
+    </a>
+
+</div>
 
 </body>
 </html>
