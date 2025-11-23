@@ -1,33 +1,52 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>イベント編集</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="/static/style.css">
-</head>
-<body>
+{% extends "base.html" %}
+{% block content %}
+<h2>イベント編集</h2>
 
-<div class="nav">
-    <a href="{{ url_for('home') }}">🏠</a>
-    <a href="{{ url_for('confirm') }}">🔙</a>
-</div>
+<form method="POST">
 
-<h1>イベント編集</h1>
+  年：
+  <select name="year">
+    {% for y in years %}
+      <option value="{{ y }}" {% if y == cand.year %}selected{% endif %}>{{ y }}</option>
+    {% endfor %}
+  </select>
 
-<form method="post">
-    <input type="number" name="year" value="{{ event.year }}" required>
-    <input type="number" name="month" value="{{ event.month }}" required>
-    <input type="number" name="day" value="{{ event.day }}" required>
+  月：
+  <select name="month">
+    {% for m in months %}
+      <option value="{{ m }}" {% if m == cand.month %}selected{% endif %}>{{ m }}</option>
+    {% endfor %}
+  </select>
 
-    <input type="text" name="gym" value="{{ event.gym }}">
+  日：
+  <select name="day">
+    {% for d in days %}
+      <option value="{{ d }}" {% if d == cand.day %}selected{% endif %}>{{ d }}</option>
+    {% endfor %}
+  </select>
 
-    <label>開始</label>
-    <input type="time" name="start" value="{{ event.start }}">
-    <label>終了</label>
-    <input type="time" name="end" value="{{ event.end }}">
+  体育館：
+  <select name="gym">
+    {% for g in gyms %}
+      <option value="{{ g }}" {% if g == cand.gym %}selected{% endif %}>{{ g }}</option>
+    {% endfor %}
+  </select>
 
-    <button type="submit">更新する</button>
+  開始：
+  <select name="start">
+    {% for t in times %}
+      <option value="{{ t }}" {% if t == cand.start %}selected{% endif %}>{{ t }}</option>
+    {% endfor %}
+  </select>
+
+  終了：
+  <select name="end">
+    {% for t in times %}
+      <option value="{{ t }}" {% if t == cand.end %}selected{% endif %}>{{ t }}</option>
+    {% endfor %}
+  </select>
+
+  <button type="submit">更新</button>
 </form>
 
-</body>
-</html>
+{% endblock %}
