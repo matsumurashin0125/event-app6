@@ -12,7 +12,7 @@ def create_app():
     if not DATABASE_URL:
         raise RuntimeError("ERROR: DATABASE_URL が設定されていません。（PostgreSQL 専用版）")
 
-    # ★ これがないと Render で絶対に起動しない ★
+    # Heroku形式 → SQLAlchemy形式へ変換
     if DATABASE_URL.startswith("postgres://"):
         DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
@@ -47,7 +47,11 @@ def create_app():
 
     @app.route("/confirm", methods=["GET", "POST"])
     def confirm():
-        candidates = Candidate.query.order_by(Candidate.year, Candidate.month, Candidate.day).all()
+        candidates = Candidate.query.order_by(
+            Candidate.year,
+            Candidate.month,
+            Candidate.day
+        ).all()
 
         if request.method == "POST":
             c_id = int(request.form["candidate_id"])
@@ -89,7 +93,12 @@ def create_app():
             selected_event=event_id
         )
 
+    # ★ Render に必要：DB を自動作成（超重要）
+    with app.app_context():
+        db.create_all()
+
     return app
+
 
 # ====== Render 起動 ======
 app = create_app()
