@@ -1,10 +1,17 @@
-{% extends "base.html" %}
-{% block content %}
-<h2>管理者メニュー</h2>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>管理者メニュー</title>
+</head>
+<body>
+<h1>管理者メニュー</h1>
 
-<a href="{{ url_for('candidate') }}">候補日追加</a><br>
-<a href="{{ url_for('confirm') }}">確定状況</a><br>
-<a href="{{ url_for('register') }}">参加状況確認</a><br>
-<a href="{{ url_for('admin_logout') }}">ログアウト</a>
-
-{% endblock %}
+<ul>
+    <li><a href="{{ url_for('candidate') }}">候補日追加</a></li>
+    <li><a href="{{ url_for('confirm') }}">候補日確認・確定</a></li>
+    <li><a href="{{ url_for('register') }}">参加状況確認</a></li>
+    <li><a href="{{ url_for('home') }}">トップに戻る</a></li>
+    <li><a href="{{ url_for('admin_logout') }}">ログアウト</a></li>
+</ul>
+</body>
+</html>
