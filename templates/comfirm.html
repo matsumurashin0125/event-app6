@@ -1,19 +1,35 @@
 <!DOCTYPE html>
-<html>
-<head><meta charset="utf-8"><title>日程確定</title></head>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>日程確定</title>
+</head>
 <body>
-<h2>日程確定</h2>
 
-<form method="POST">
-    <select name="candidate_id">
-        {% for c in candidates %}
-        <option value="{{ c.id }}">
-            {{ c.year }}/{{ c.month }}/{{ c.day }} {{ c.gym }}
-        </option>
-        {% endfor %}
-    </select>
-    <button>確定</button>
-</form>
+<h1>日程確定</h1>
+
+{% if candidates %}
+    {% for c in candidates %}
+        <div style="margin-bottom:20px; padding:10px; border:1px solid #ccc;">
+            <p>
+                <strong>{{ c.year }}年 {{ c.month }}月 {{ c.day }}日</strong><br>
+                場所：{{ c.gym }}<br>
+                時間：{{ c.start }} ～ {{ c.end }}
+            </p>
+
+            <!-- ★ 重要：candidate_id を POST で送る -->
+            <form method="POST">
+                <input type="hidden" name="candidate_id" value="{{ c.id }}">
+                <button type="submit">この日に決定</button>
+            </form>
+        </div>
+    {% endfor %}
+{% else %}
+    <p>候補日がまだありません。</p>
+{% endif %}
+
+<br>
+<a href="{{ url_for('index') }}">候補日追加に戻る</a>
 
 </body>
 </html>
