@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>参加一覧</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<h1>参加一覧</h1>
+
+<table class="list-table">
+    <tr>
+        <th>名前</th>
+        <th>参加状況</th>
+        <th>日付</th>
+        <th>体育館</th>
+        <th>時間</th>
+    </tr>
+
+    {% for att, cand in records %}
+    <tr>
+        <td>{{ att.name }}</td>
+        <td>{{ att.status }}</td>
+        <td>{{ cand.year }}-{{ cand.month }}-{{ cand.day }}</td>
+        <td>{{ cand.gym }}</td>
+        <td>{{ cand.start }}〜{{ cand.end }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+<a class="back-btn" href="{{ url_for('admin_menu') }}">戻る</a>
+
+</body>
+</html>
