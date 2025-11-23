@@ -1,25 +1,31 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>参加登録 - 候補日選択</title>
+    <title>参加登録（一覧）</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
 
-<h1>参加したい日を選んでください</h1>
-
-<a class="btn" href="{{ url_for('home') }}">ホームに戻る</a>
+<h1>参加登録</h1>
 
 <div class="card-list">
-    {% for c in candidates %}
-    <div class="card">
-        <h2>{{ c.year }}年{{ c.month }}月{{ c.day }}日</h2>
-        <p>{{ c.gym }}</p>
-        <p>{{ c.start }} - {{ c.end }}</p>
-        <a class="btn" href="{{ url_for('register_event', candidate_id=c.id) }}">この日で登録する</a>
-    </div>
-    {% endfor %}
+
+    {% if confirmed %}
+        {% for conf, cand in confirmed %}
+        <div class="card selectable">
+            <h2>{{ cand.month }}月{{ cand.day }}日（{{ cand.start }} - {{ cand.end }}）</h2>
+            <p>{{ cand.year }}年 / {{ cand.gym }}</p>
+
+            <a class="btn" href="{{ url_for('register_event', candidate_id=cand.id) }}">
+                この日に登録する
+            </a>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p>まだ確定した日程がありません。</p>
+    {% endif %}
+
 </div>
 
 </body>
