@@ -217,8 +217,56 @@ def create_app():
         )
 
     # ------------------------------
-    # 編集・削除は省略（今まで通り動く）
+    # 編集・削除
     # ------------------------------
+　　    # ------------------------------
+    # 候補日 編集
+    # ------------------------------
+    @app.route("/candidate/<int:id>/edit", methods=["GET", "POST"])
+    @admin_required
+    def edit_candidate(id):
+        cand = Candidate.query.get_or_404(id)
+
+        gyms = ["中平井", "平井", "西小岩", "北小岩", "南小岩"]
+        times = []
+        for h in range(18, 23):
+            times.append(f"{h:02d}:00")
+            times.append(f"{h:02d}:30")
+        times = times[:-1]
+
+        if request.method == "POST":
+            cand.year = int(request.form["year"])
+            cand.month = int(request.form["month"])
+            cand.day = int(request.form["day"])
+            cand.gym = request.form["gym"]
+            cand.start = request.form["start"]
+            cand.end = request.form["end"]
+
+            db.session.commit()
+            return redirect(url_for("confirm"))
+
+        return render_template(
+            "edit_candidate.html",
+            cand=cand,
+            gyms=gyms,
+            times=times
+        )
+
+    # ------------------------------
+    # 候補日 削除
+    # ------------------------------
+    @app.route("/candidate/<int:id>/delete", methods=["POST"])
+    @admin_required
+    def delete_candidate(id):
+        cand = Candidate.query.get_or_404(id)
+
+        # 候補日に紐づく確定日がある場合は削除
+        Confirmed.query.filter_by(candidate_id=id).delete()
+
+        db.session.delete(cand)
+        db.session.commit()
+
+        return redirect(url_for("confirm"))
 
     with app.app_context():
         db.create_all()
