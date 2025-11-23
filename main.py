@@ -268,6 +268,42 @@ def create_app():
 
         return redirect(url_for("confirm"))
 
+　　    # ------------------------------
+    # 出欠 編集
+    # ------------------------------
+    @app.route("/attendance/<int:id>/edit", methods=["GET", "POST"])
+    @admin_required
+    def edit_attendance(id):
+        att = Attendance.query.get_or_404(id)
+        members = ["松村", "山火", "山根", "奥迫", "川崎"]
+
+        if request.method == "POST":
+            att.name = request.form["name"]
+            att.status = request.form["status"]
+            db.session.commit()
+
+            return redirect(url_for("register", event_id=att.event_id))
+
+        return render_template(
+            "edit_attendance.html",
+            att=att,
+            members=members
+        )
+
+    # ------------------------------
+    # 出欠 削除
+    # ------------------------------
+    @app.route("/attendance/<int:id>/delete", methods=["POST"])
+    @admin_required
+    def delete_attendance(id):
+        att = Attendance.query.get_or_404(id)
+        event_id = att.event_id
+
+        db.session.delete(att)
+        db.session.commit()
+
+        return redirect(url_for("register", event_id=event_id))
+
     with app.app_context():
         db.create_all()
 
