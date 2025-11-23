@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>候補日追加</title>
+</head>
+<body>
+
+<h1>候補日追加</h1>
+
+<form method="post">
+    年: <input type="number" name="year" required><br>
+    月: <input type="number" name="month" required><br>
+    日: <input type="number" name="day" required><br>
+    場所: <input type="text" name="gym"><br>
+    開始: <input type="time" name="start"><br>
+    終了: <input type="time" name="end"><br>
+    <button type="submit">追加</button>
+</form>
+
+<p><a href="{{ url_for('admin_menu') }}">管理者メニューへ戻る</a></p>
+<p><a href="{{ url_for('home') }}">トップへ戻る</a></p>
+
+</body>
+</html>
