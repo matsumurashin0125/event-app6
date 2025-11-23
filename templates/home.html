@@ -1,0 +1,15 @@
+<h2>ページ選択</h2>
+
+<ul>
+    <li><a href="/register">出欠登録（誰でもOK）</a></li>
+
+    <li><a href="/candidate">候補日追加（管理者）</a></li>
+    <li><a href="/confirm">候補日確認・確定（管理者）</a></li>
+    <li><a href="/register">イベント一覧 / 編集・削除（管理者）</a></li>
+</ul>
+
+{% if session.admin_logged_in %}
+    <p><a href="/admin/logout">ログアウト</a></p>
+{% else %}
+    <p><a href="/admin/login">管理者ログイン</a></p>
+{% endif %}
