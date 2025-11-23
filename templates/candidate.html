@@ -2,23 +2,31 @@
 <html>
 <head>
     <title>候補日追加</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
+
+<div class="nav">
+    <a href="{{ url_for('home') }}">🏠</a>
+    <a href="{{ url_for('admin_menu') }}">🔧</a>
+</div>
 
 <h1>候補日追加</h1>
 
 <form method="post">
-    年: <input type="number" name="year" required><br>
-    月: <input type="number" name="month" required><br>
-    日: <input type="number" name="day" required><br>
-    場所: <input type="text" name="gym"><br>
-    開始: <input type="time" name="start"><br>
-    終了: <input type="time" name="end"><br>
-    <button type="submit">追加</button>
-</form>
+    <input type="number" name="year" placeholder="年" required>
+    <input type="number" name="month" placeholder="月" required>
+    <input type="number" name="day" placeholder="日" required>
 
-<p><a href="{{ url_for('admin_menu') }}">管理者メニューへ戻る</a></p>
-<p><a href="{{ url_for('home') }}">トップへ戻る</a></p>
+    <input type="text" name="gym" placeholder="場所">
+    <label>開始：</label>
+    <input type="time" name="start">
+    <label>終了：</label>
+    <input type="time" name="end">
+
+    <button type="submit">追加する</button>
+</form>
 
 </body>
 </html>
