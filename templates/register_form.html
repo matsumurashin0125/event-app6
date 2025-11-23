@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>参加登録</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<h2>
+    {{ candidate.year }}年{{ candidate.month }}月{{ candidate.day }}日<br>
+    {{ candidate.start }}〜{{ candidate.end }} / {{ candidate.gym }}
+</h2>
+
+<form method="POST">
+    <label>名前</label>
+    <select name="name">
+        {% for name in members %}
+        <option value="{{ name }}">{{ name }}</option>
+        {% endfor %}
+    </select>
+
+    <label>出欠</label>
+    <select name="status">
+        <option value="○">○</option>
+        <option value="△">△</option>
+        <option value="×">×</option>
+    </select>
+
+    <button type="submit" class="btn">登録</button>
+</form>
+
+<h3>登録状況</h3>
+<ul>
+    {% for a in attendance %}
+    <li>{{ a.name }}：{{ a.status }}</li>
+    {% endfor %}
+</ul>
+
+</body>
+</html>
