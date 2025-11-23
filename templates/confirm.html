@@ -1,45 +1,37 @@
-{% extends "base.html" %}
-{% block content %}
-<h2>候補日 → 確定</h2>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>候補日確認</title>
+</head>
+<body>
 
-<h3>候補一覧</h3>
+<h1>候補日一覧</h1>
+
+<h2>未確定</h2>
 <ul>
-  {% for c in candidates %}
-  <li>
-    {{ c.year }}/{{ c.month }}/{{ c.day }} {{ c.gym }} {{ c.start }}-{{ c.end }}
-
-    <!-- 確定 -->
-    <form method="POST" style="display:inline;">
-      <input type="hidden" name="candidate_id" value="{{ c.id }}">
-      <button type="submit">確定</button>
-    </form>
-
-    <!-- 編集 -->
-    <a href="{{ url_for('edit_event', candidate_id=c.id) }}">編集</a>
-
-    <!-- 削除 -->
-    <form method="POST" action="{{ url_for('delete_event', candidate_id=c.id) }}" style="display:inline;">
-      <button type="submit" onclick="return confirm('削除しますか？')">削除</button>
-    </form>
-  </li>
-  {% endfor %}
+{% for c in candidates %}
+    <li>
+        {{ c.year }} / {{ c.month }} / {{ c.day }}  {{ c.gym }}
+        <form method="post" style="display:inline;">
+            <input type="hidden" name="candidate_id" value="{{ c.id }}">
+            <button type="submit">この日で確定</button>
+        </form>
+    </li>
+{% endfor %}
 </ul>
 
-<h3>確定済み</h3>
+<h2>確定済み</h2>
 <ul>
-  {% for con, c in confirmed %}
-  <li>
-    <b>[確定]</b> {{ c.year }}/{{ c.month }}/{{ c.day }} {{ c.gym }} {{ c.start }}-{{ c.end }}
-
-    <!-- 編集 -->
-    <a href="{{ url_for('edit_event', candidate_id=c.id) }}">編集</a>
-
-    <!-- 削除 -->
-    <form method="POST" action="{{ url_for('delete_event', candidate_id=c.id) }}" style="display:inline;">
-      <button type="submit" onclick="return confirm('削除しますか？')">削除</button>
-    </form>
-  </li>
-  {% endfor %}
+{% for con, cand in confirmed %}
+    <li>
+        【確定】 {{ cand.year }} / {{ cand.month }} / {{ cand.day }} {{ cand.gym }}
+        <a href="{{ url_for('edit_event', event_id=con.id) }}">編集</a>
+    </li>
+{% endfor %}
 </ul>
 
-{% endblock %}
+<p><a href="{{ url_for('admin_menu') }}">管理者メニューへ戻る</a></p>
+<p><a href="{{ url_for('home') }}">トップへ戻る</a></p>
+
+</body>
+</html>
