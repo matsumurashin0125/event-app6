@@ -1,76 +1,167 @@
 /* ------------------------------
-   スマホ最適化共通スタイル
+   基本設定
 ------------------------------ */
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", sans-serif;
-    margin: 16px;
-    padding-bottom: 50px;
-    font-size: 18px;
-}
-
-/* リンクとボタンを押しやすく */
-button, input[type="submit"], a.btn {
-    width: 100%;
-    padding: 14px;
-    margin: 10px 0;
-    font-size: 18px;
-    border-radius: 10px;
-    border: none;
-    background: #007aff;
-    color: white;
+    font-family: -apple-system, BlinkMacSystemFont, "Helvetica Neue", Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background: #f5f5f5;
     text-align: center;
-    display: block;
+    color: #333;
 }
 
-a.btn-gray {
-    background: #d1d1d6;
-    color: #000;
+h1, h2, h3 {
+    margin-bottom: 20px;
 }
 
-a {
+/* ------------------------------
+   ボタン
+------------------------------ */
+.btn {
+    display: inline-block;
+    margin: 8px;
+    padding: 12px 20px;
+    background-color: #007bff;
+    color: white;
     text-decoration: none;
+    border-radius: 8px;
+    font-size: 16px;
 }
 
-/* 入力欄 */
+.btn:hover {
+    background-color: #005dc1;
+}
+
+.btn-danger {
+    background-color: #e53935;
+}
+
+.btn-danger:hover {
+    background-color: #c62828;
+}
+
+/* 小さめボタン */
+.btn-small {
+    padding: 6px 12px;
+    font-size: 14px;
+}
+
+/* ------------------------------
+   カードレイアウト
+------------------------------ */
+.card-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 15px;
+    padding: 10px;
+}
+
+.card {
+    width: 90%;
+    max-width: 320px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    padding: 20px;
+    box-sizing: border-box;
+    text-align: left;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.card h2 {
+    margin-top: 0;
+    font-size: 20px;
+    color: #222;
+}
+
+.card p {
+    margin: 4px 0 10px 0;
+    font-size: 15px;
+    color: #555;
+}
+
+.card .btn {
+    width: 100%;
+    text-align: center;
+}
+
+/* ------------------------------
+   フォーム
+------------------------------ */
+form {
+    max-width: 420px;
+    margin: 0 auto;
+    text-align: left;
+}
+
+label {
+    display: block;
+    margin: 12px 0 6px;
+    font-weight: bold;
+}
+
 input, select {
     width: 100%;
-    padding: 12px;
-    margin: 10px 0;
-    font-size: 18px;
-    border-radius: 8px;
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 6px;
     border: 1px solid #ccc;
 }
 
-/* ------------------------------
-   カード（リストを見やすく）
------------------------------- */
-.card {
-    padding: 16px;
-    margin: 12px 0;
-    background: #fff;
-    border-radius: 12px;
-    border: 1px solid #e5e5ea;
-    box-shadow: 0 2px 6px #00000010;
-}
-
-/* ------------------------------
-   上部ナビ（固定）
------------------------------- */
-.nav {
-    position: sticky;
-    top: 0;
-    background: #ffffffee;
-    padding: 10px;
-    display: flex;
-    gap: 10px;
-    border-bottom: 1px solid #ddd;
-    backdrop-filter: blur(10px);
-    z-index: 1000;
-}
-
-.nav a {
-    padding: 6px 12px;
-    border-radius: 8px;
+button {
+    margin-top: 20px;
+    width: 100%;
+    padding: 12px;
     font-size: 16px;
-    background: #f2f2f7;
+    background: #007bff;
+    color: white;
+    border: none;
+    border-radius: 8px;
+}
+
+button:hover {
+    background: #005dc1;
+}
+
+/* ------------------------------
+   テーブル（管理者用）
+------------------------------ */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+table tr:nth-child(even) {
+    background: #f0f0f0;
+}
+
+th, td {
+    padding: 10px;
+    border: 1px solid #ddd;
+}
+
+th {
+    background: #007bff;
+    color: white;
+}
+
+/* ------------------------------
+   スマホ最適化
+------------------------------ */
+@media (max-width: 480px) {
+    .card {
+        width: 95%;
+    }
+
+    .btn {
+        width: 90%;
+        font-size: 15px;
+    }
 }
