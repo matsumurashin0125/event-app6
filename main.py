@@ -20,12 +20,11 @@ def admin_required(f):
 def create_app():
     app = Flask(__name__, static_folder="static", template_folder="templates")
 
-    # ===== PostgreSQL必須 =====
+    # DB 設定
     DATABASE_URL = os.environ.get("DATABASE_URL")
     if not DATABASE_URL:
-        raise RuntimeError("ERROR: DATABASE_URL が設定されていません。（PostgreSQL 専用版）")
+        raise RuntimeError("DATABASE_URL が設定されていません")
 
-    # Heroku形式 → SQLAlchemy形式へ変換
     if DATABASE_URL.startswith("postgres://"):
         DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
@@ -35,16 +34,16 @@ def create_app():
 
     db.init_app(app)
 
-    # ============================================
-    #             ADMIN LOGIN
-    # ============================================
+    # ------------------------------
+    # ログイン画面
+    # ------------------------------
     @app.route("/admin/login", methods=["GET", "POST"])
     def admin_login():
         if request.method == "POST":
             password = request.form.get("password")
             if password == os.environ.get("ADMIN_PASSWORD", "admin123"):
                 session["admin_logged_in"] = True
-                return redirect(url_for("index"))
+                return redirect(url_for("home"))
             return render_template("admin_login.html", error="パスワードが違います。")
 
         return render_template("admin_login.html")
@@ -52,12 +51,20 @@ def create_app():
     @app.route("/admin/logout")
     def admin_logout():
         session.pop("admin_logged_in", None)
-        return redirect(url_for("admin_login"))
+        return redirect(url_for("home"))
 
-    # ============================================
-    #                  ROUTES
-    # ============================================
-    @app.route("/", methods=["GET", "POST"])
+    # ------------------------------
+    # トップページ（誰でもOK）
+    # ------------------------------
+    @app.route("/")
+    @app.route("/home")
+    def home():
+        return render_template("home.html")
+
+    # ------------------------------
+    # 候補日追加（管理者のみ）
+    # ------------------------------
+    @app.route("/candidate", methods=["GET", "POST"])
     @admin_required
     def index():
         if request.method == "POST":
@@ -77,6 +84,9 @@ def create_app():
         base = (today.replace(day=1) + timedelta(days=92)).replace(day=1)
         return render_template("index.html", base=base)
 
+    # ------------------------------
+    # 候補日確認（管理者のみ）
+    # ------------------------------
     @app.route("/confirm", methods=["GET", "POST"])
     @admin_required
     def confirm():
@@ -92,6 +102,9 @@ def create_app():
 
         return render_template("confirm.html", candidates=candidates)
 
+    # ------------------------------
+    # 出欠登録（誰でもOK）
+    # ------------------------------
     @app.route("/register", methods=["GET", "POST"])
     def register():
         confirmed_list = (
@@ -124,15 +137,15 @@ def create_app():
             selected_event=event_id
         )
 
-    # ====================================
-    #      イベント編集（管理者のみ）
-    # ====================================
+    # ------------------------------
+    # イベント編集（管理者のみ）
+    # ------------------------------
     @app.route("/event/<int:event_id>/edit", methods=["GET", "POST"])
     @admin_required
     def edit_event(event_id):
         confirmed = Confirmed.query.get(event_id)
         if not confirmed:
-            return "イベントが存在しません"
+            return "イベントがありません"
 
         cand = Candidate.query.get(confirmed.candidate_id)
 
@@ -149,15 +162,15 @@ def create_app():
 
         return render_template("edit_event.html", event=cand, event_id=event_id)
 
-    # ====================================
-    #      イベント削除（管理者のみ）
-    # ====================================
+    # ------------------------------
+    # イベント削除（管理者のみ）
+    # ------------------------------
     @app.route("/event/<int:event_id>/delete", methods=["POST"])
     @admin_required
     def delete_event(event_id):
         confirmed = Confirmed.query.get(event_id)
         if not confirmed:
-            return "イベントが存在しません"
+            return "イベントがありません"
 
         Attendance.query.filter_by(event_id=event_id).delete()
         db.session.delete(confirmed)
@@ -165,7 +178,7 @@ def create_app():
 
         return redirect(url_for("register"))
 
-    # ★ Render に必要：DB 自動作成
+    # DB 初期化
     with app.app_context():
         db.create_all()
 
@@ -173,7 +186,3 @@ def create_app():
 
 
 app = create_app()
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
