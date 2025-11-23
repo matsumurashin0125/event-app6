@@ -7,30 +7,29 @@
 </head>
 <body>
 
-<h2>
-    {{ candidate.year }}年{{ candidate.month }}月{{ candidate.day }}日<br>
-    {{ candidate.start }}〜{{ candidate.end }} / {{ candidate.gym }}
-</h2>
+<h1>
+    {{ candidate.year }}年{{ candidate.month }}月{{ candidate.day }}日  
+    （{{ candidate.gym }} / {{ candidate.start }} - {{ candidate.end }}）
+</h1>
 
-<form method="POST">
-    <label>名前</label>
-    <select name="name">
-        {% for name in members %}
-        <option value="{{ name }}">{{ name }}</option>
-        {% endfor %}
-    </select>
+<a class="btn" href="{{ url_for('register') }}">← 候補日一覧に戻る</a>
 
-    <label>出欠</label>
+<h2>参加登録</h2>
+<form method="post">
+    <label>名前：</label>
+    <input type="text" name="name" required>
+
+    <label>ステータス：</label>
     <select name="status">
-        <option value="○">○</option>
-        <option value="△">△</option>
-        <option value="×">×</option>
+        <option value="参加">参加</option>
+        <option value="未定">未定</option>
+        <option value="不参加">不参加</option>
     </select>
 
-    <button type="submit" class="btn">登録</button>
+    <button class="btn" type="submit">登録</button>
 </form>
 
-<h3>登録状況</h3>
+<h2>登録済み一覧</h2>
 <ul>
     {% for a in attendance %}
     <li>{{ a.name }}：{{ a.status }}</li>
